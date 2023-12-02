@@ -1,11 +1,9 @@
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<style>
-    body { margin: 0; }
-</style>
+    <meta charset="utf-8">
+    <title>characterfall_game</title>
 </head>
-
 <body>
     <script type="importmap">
         {
@@ -15,6 +13,80 @@
             }
         }
     </script>
-    <script type="module" src="main.js"></script>
+    <script type="module">
+        import * as THREE from "three";
+        import { AR } from "./AR.js";
+        import { sleep } from "https://js.sabae.cc/sleep.js";
+
+        class characterfall_game extends AR {
+            async main() {
+                const boxes = [];
+                const geometry = new THREE.BoxGeometry();
+                const loadPic = new THREE.TextureLoader();
+                
+                // ボックス用のマテリアルを設定
+                const material = [
+                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                    new THREE.MeshBasicMaterial({ colorWrite: false })
+                ];
+
+                // ボックスをランダムに生成してシーンに追加
+                for (let i = 0; i < 50; i++) {
+                    const box = new THREE.Mesh(geometry, material);
+                    box.position.x = (Math.random() - 0.5) * 10;
+                    box.position.y = (Math.random() - 0.5) * 10 + 20; // 上から降らせるためにY座標を調整
+                    box.position.z = (Math.random() - 0.5) * 10;
+                    box.renderOrder = -1;
+                    this.scene.add(box);
+                    boxes.push(box);
+                }
+                this.boxes = boxes;
+
+
+                game: for (;;) {
+                    await sleep(1000 / 60);
+                    for (let i = 0; i < this.ctrls.length; i++) {
+                        const ctrl = this.ctrls[i];
+                        const hp = new THREE.Vector3();
+                        hp.setFromMatrixPosition(ctrl.matrixWorld);
+                        for (let j = boxes.length - 1; j >= 0; j--) {
+                            const box = boxes[j];
+                            const boxPosition = new THREE.Vector3().setFromMatrixPosition(box.matrixWorld);
+                            const distance = hp.distanceTo(boxPosition);
+                            if (distance < 1) { // 例として1単位以下になった場合ボックスを削除する
+                                this.scene.remove(box);
+                                boxes.splice(j, 1);
+                            }
+                        };
+                    }
+                };
+            }
+            loop() {
+                if (!this.boxes) return;
+                this.boxes.forEach(box => {
+                        box.position.y -= 0.05; // Y座標を変更して上に移動させる速度を制御
+                        // もし箱が画面外に出たら上から再度降らせる
+                        if (box.position.y < -10) {
+                            box.position.y = 20; // 上から降らせる高さにリセット
+                        }
+                    });
+            }
+        }
+        
+
+        // AR初期化
+
+
+        await new characterfall_game().init();
+
+
+
+
+    </script>
 </body>
 </html>
