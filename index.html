@@ -22,7 +22,7 @@
         class characterfall_game extends AR {
             async main() {
                 const boxes = [];
-                const geometry = new THREE.BoxGeometry();
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
                 const loadPic = new THREE.TextureLoader();
                 
                 // ボックス用のマテリアルを設定
@@ -39,9 +39,9 @@
                 // ボックスをランダムに生成してシーンに追加
                 for (let i = 0; i < 50; i++) {
                     const box = new THREE.Mesh(geometry, material);
-                    box.position.x = (Math.random() - 0.5) * 10;
+                    box.position.x = (Math.random() * (2.0 + 2.0) - 2.0);
                     box.position.y = (Math.random() - 0.5) * 10 + 20; // 上から降らせるためにY座標を調整
-                    box.position.z = (Math.random() - 0.5) * 10;
+                    box.position.z = (Math.random() * (2.0 + 2.0) - 2.0);
                     box.renderOrder = -1;
                     this.scene.add(box);
                     boxes.push(box);
