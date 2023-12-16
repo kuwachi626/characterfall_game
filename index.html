@@ -46,7 +46,7 @@
                     start.position.copy(staposi);
                     const starttxt = createTextMesh("Start", 0, -0.1, -0.5);
                     
-                    const title  = createTextMesh("characterfall_game", 0, 0.2, -tz);
+                    const title  = createTextMesh("characterfall_game", 0, 0.2, tz);
 
                     this.scene.add(title);
                     this.scene.add(start);
@@ -69,7 +69,7 @@
                         }
                     }
 
-                    const subtitle  = createTextMesh("上を見ろ！！", 0, 0.2, -tz);
+                    const subtitle  = createTextMesh("上を見ろ！！", 0, 0.2, tz);
                     this.scene.add(subtitle);
 
                     // ボックス用のマテリアルを設定
@@ -118,10 +118,12 @@
                             if (boxes.length === 0) {
                                 ss.play("clear");
                                 this.scene.remove(subtitle);
-                                const fintxt  = createTextMesh("CLEAR!", 0, 0.2, -tz);
+                                const fintxt = new THREE.Group();
+                                fintxt.add(createTextMesh("CLEAR!", 0, 0.2, tz));
+                                fintxt.add(createTextMesh("FIN", 0.4, -0.1, -0.5));
                                 this.scene.add(fintxt);
                                 const finposi = new THREE.Vector3(0.4, -0.3, -0.5);
-                                const fin = createNumSphere("F", size, 0x00ffff);
+                                const fin = createNumSphere("F", size, 0xFF0000);
                                 fin.position.copy(finposi);
                                 this.scene.add(fin)
 
