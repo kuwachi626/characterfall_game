@@ -80,25 +80,34 @@
                         new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
                         new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
                         new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                        new THREE.MeshBasicMaterial({ colorWrite: false })
                     ];
 
-                    // const fmaterial = []
+                    const floorGeometry = new THREE.PlaneGeometry(100, 100); // 床の幅と高さを設定
 
-                    // const fllor = new THREE.Mesh(geometry, fmaterial);
+                    // 透明なマテリアルを作成
+                    const floorMaterial = new THREE.MeshBasicMaterial({ colorWrite: false });
+
+                    // 床のメッシュを作成
+                    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
+                    // 床を回転して水平に配置する（床がXY平面上にあると仮定）
+                    floor.rotation.x = -Math.PI / 2; // X軸を中心に90度回転
+                    floor.position.y = -5;
+                    floor.renderOrder = -1;
+
+                    this.scene.add(floor);
+
                     // ボックスをランダムに生成してシーンに追加
                     for (let i = 0; i < 30; i++) {
                         const box = new THREE.Mesh(geometry, material);
                         box.position.x = (Math.random() * (2.0 + 2.0) - 2.0);
                         box.position.y = (Math.random() - 0.5) * 10 + 20; // 上から降らせるためにY座標を調整
                         box.position.z = (Math.random() * (2.0 + 2.0) - 2.0);
-                        box.renderOrder = -1;
                         this.scene.add(box);
                         boxes.push(box);
                     }
                     this.boxes = boxes;
 
-    // (Math.random() * (max - min) + min);
                     game: for (;;) {
                         await sleep(1000 / 60);
                         for (let i = 0; i < this.ctrls.length; i++) {
@@ -117,6 +126,7 @@
                             };
                             if (boxes.length === 0) {
                                 ss.play("clear");
+                                this.scene.remove(floor);
                                 this.scene.remove(subtitle);
                                 const fintxt = new THREE.Group();
                                 fintxt.add(createTextMesh("CLEAR!", 0, 0.2, tz));
