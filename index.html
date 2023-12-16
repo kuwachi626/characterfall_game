@@ -32,83 +32,112 @@
 
         class characterfall_game extends AR {
             async main() {
-                const tz = -1.5;
-                const size = 0.1;
-                const boxes = [];
-                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-                const loadPic = new THREE.TextureLoader();
+                for (;;) {
+                    const tz = -1.5;
+                    const size = 0.1;
+                    const boxes = [];
+                    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                    const loadPic = new THREE.TextureLoader();
 
-                const staposi = new THREE.Vector3(0, -0.3, -0.5);
-                const start = createNumSphere("S", size, 0x00ffff);
-                start.position.copy(staposi);
-                const starttxt = createTextMesh("Start", 0, -0.1, -0.5);
-                
-                const title  = createTextMesh("characterfall_game", 0, 0.2, -tz);
+                    const staposi = new THREE.Vector3(0, -0.3, -0.5);
+                    const start = createNumSphere("S", size, 0x00ffff);
+                    start.position.copy(staposi);
+                    const starttxt = createTextMesh("Start", 0, -0.1, -0.5);
+                    
+                    const title  = createTextMesh("characterfall_game", 0, 0.2, -tz);
 
-                this.scene.add(title);
-                this.scene.add(start);
-                this.scene.add(starttxt);
+                    this.scene.add(title);
+                    this.scene.add(start);
+                    this.scene.add(starttxt);
 
-                A: for (;;) {
-                    await sleep(1000 / 60);
-                    for (let i = 0; i < this.ctrls.length; i++) {
-                        const ctrl = this.ctrls[i];
-                        const hp = new THREE.Vector3();
-                        hp.setFromMatrixPosition(ctrl.matrixWorld);
-                        let e = hp.distanceTo(staposi);
-                        if (e <= size * 1.2) {
-                        this.scene.remove(title);
-                        this.scene.remove(start);
-                        this.scene.remove(starttxt);
-                        break A;
+                    A: for (;;) {
+                        await sleep(1000 / 60);
+                        for (let i = 0; i < this.ctrls.length; i++) {
+                            const ctrl = this.ctrls[i];
+                            const hp = new THREE.Vector3();
+                            hp.setFromMatrixPosition(ctrl.matrixWorld);
+                            let e = hp.distanceTo(staposi);
+                            if (e <= size * 1.2) {
+                            this.scene.remove(title);
+                            this.scene.remove(start);
+                            this.scene.remove(starttxt);
+                            break A;
+                            }
+                        }
+                    }
+
+                    const subtitle  = createTextMesh("上を見ろ！！", 0, 0.2, -tz);
+                    this.scene.add(subtitle);
+
+                    // ボックス用のマテリアルを設定
+                    const material = [
+                        new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                        new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                        new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                        new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                        new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                        new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
+                        new THREE.MeshBasicMaterial({ colorWrite: false })
+                    ];
+
+                    // const fmaterial = []
+
+                    // const fllor = new THREE.Mesh(geometry, fmaterial);
+                    // ボックスをランダムに生成してシーンに追加
+                    for (let i = 0; i < 30; i++) {
+                        const box = new THREE.Mesh(geometry, material);
+                        box.position.x = (Math.random() * (2.0 + 2.0) - 2.0);
+                        box.position.y = (Math.random() - 0.5) * 10 + 20; // 上から降らせるためにY座標を調整
+                        box.position.z = (Math.random() * (2.0 + 2.0) - 2.0);
+                        box.renderOrder = -1;
+                        this.scene.add(box);
+                        boxes.push(box);
+                    }
+                    this.boxes = boxes;
+
+    // (Math.random() * (max - min) + min);
+                    game: for (;;) {
+                        await sleep(1000 / 60);
+                        for (let i = 0; i < this.ctrls.length; i++) {
+                            const ctrl = this.ctrls[i];
+                            const hp = new THREE.Vector3();
+                            hp.setFromMatrixPosition(ctrl.matrixWorld);
+                            for (let j = boxes.length - 1; j >= 0; j--) {
+                                const box = boxes[j];
+                                const boxPosition = new THREE.Vector3().setFromMatrixPosition(box.matrixWorld);
+                                const distance = hp.distanceTo(boxPosition);
+                                if (distance < 1) { // 例として1単位以下になった場合ボックスを削除する
+                                    this.scene.remove(box);
+                                    boxes.splice(j, 1);
+                                }
+                            };
+                            if (boxes.length === 0) {
+                                this.scene.remove(subtitle);
+                                const fintxt  = createTextMesh("CLEAR!", 0, 0.2, -tz);
+                                this.scene.add(fintxt);
+                                const finposi = new THREE.Vector3(0.4, -0.3, -0.5);
+                                const fin = createNumSphere("F", size, 0x00ffff);
+                                fin.position.copy(finposi);
+                                this.scene.add(fin)
+
+                                A: for (;;) {
+                                    await sleep(1000 / 60);
+                                    for (let i = 0; i < this.ctrls.length; i++) {
+                                        const ctrl = this.ctrls[i];
+                                        const hp = new THREE.Vector3();
+                                        hp.setFromMatrixPosition(ctrl.matrixWorld);
+                                        let e = hp.distanceTo(finposi);
+                                        if (e <= size * 1.2) {
+                                        this.scene.remove(fintxt);
+                                        this.scene.remove(fin);
+                                        break game;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-
-                const subtitle  = createTextMesh("上を見ろ！！", 0, 0.2, -tz);
-                this.scene.add(subtitle);
-
-                // ボックス用のマテリアルを設定
-                const material = [
-                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                    new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
-                    new THREE.MeshBasicMaterial({ colorWrite: false })
-                ];
-
-                // ボックスをランダムに生成してシーンに追加
-                for (let i = 0; i < 50; i++) {
-                    const box = new THREE.Mesh(geometry, material);
-                    box.position.x = (Math.random() * (2.0 + 2.0) - 2.0);
-                    box.position.y = (Math.random() - 0.5) * 10 + 20; // 上から降らせるためにY座標を調整
-                    box.position.z = (Math.random() * (2.0 + 2.0) - 2.0);
-                    box.renderOrder = -1;
-                    this.scene.add(box);
-                    boxes.push(box);
-                }
-                this.boxes = boxes;
-
-
-                game: for (;;) {
-                    await sleep(1000 / 60);
-                    for (let i = 0; i < this.ctrls.length; i++) {
-                        const ctrl = this.ctrls[i];
-                        const hp = new THREE.Vector3();
-                        hp.setFromMatrixPosition(ctrl.matrixWorld);
-                        for (let j = boxes.length - 1; j >= 0; j--) {
-                            const box = boxes[j];
-                            const boxPosition = new THREE.Vector3().setFromMatrixPosition(box.matrixWorld);
-                            const distance = hp.distanceTo(boxPosition);
-                            if (distance < 1) { // 例として1単位以下になった場合ボックスを削除する
-                                this.scene.remove(box);
-                                boxes.splice(j, 1);
-                            }
-                        };
-                    }
-                };
             }
             loop() {
                 if (!this.boxes) return;
