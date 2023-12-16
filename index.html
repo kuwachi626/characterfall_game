@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>characterfall_game</title>
 </head>
-<body>
+<body style="margin: 0; background-color: #888888;">
     <script type="importmap">
         {
             "imports": {
@@ -19,12 +19,55 @@
         import { createTextMesh } from "./createTextMesh.js";
         import { sleep } from "https://js.sabae.cc/sleep.js";
 
+        export const createNumSphere = (str, size, color) => {
+            const g = new THREE.Group();
+            const geo = new THREE.SphereGeometry(size, 15, 32);
+            const mat = new THREE.MeshBasicMaterial({ color, opacity: 0.6, transparent: true });
+            const mesh = new THREE.Mesh(geo, mat);
+            g.add(mesh);
+            const txt = createTextMesh(str, 0, 0, 0, 0x000000);
+            g.add(txt);
+            return g;
+        };
+
         class characterfall_game extends AR {
             async main() {
+                const tz = -1.5;
+                const size = 0.1;
                 const boxes = [];
                 const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
                 const loadPic = new THREE.TextureLoader();
+
+                const staposi = new THREE.Vector3(0, -0.3, -0.5);
+                const start = createNumSphere("S", size, 0x00ffff);
+                start.position.copy(staposi);
+                const starttxt = createTextMesh("Start", 0, -0.1, -0.5);
                 
+                const title  = createTextMesh("characterfall_game", 0, 0.2, -tz);
+
+                this.scene.add(title);
+                this.scene.add(start);
+                this.scene.add(starttxt);
+
+                A: for (;;) {
+                    await sleep(1000 / 60);
+                    for (let i = 0; i < this.ctrls.length; i++) {
+                        const ctrl = this.ctrls[i];
+                        const hp = new THREE.Vector3();
+                        hp.setFromMatrixPosition(ctrl.matrixWorld);
+                        let e = hp.distanceTo(staposi);
+                        if (e <= size * 1.2) {
+                        this.scene.remove(title);
+                        this.scene.remove(start);
+                        this.scene.remove(starttxt);
+                        break A;
+                        }
+                    }
+                }
+
+                const subtitle  = createTextMesh("上を見ろ！！", 0, 0.2, -tz);
+                this.scene.add(subtitle);
+
                 // ボックス用のマテリアルを設定
                 const material = [
                     new THREE.MeshBasicMaterial({ map: loadPic.load('img/char3.jpg') }),
